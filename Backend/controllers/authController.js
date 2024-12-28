@@ -155,23 +155,36 @@ export const forgotPasswordController = async (req, res) => {
 };
 
 
-export const getUser= async (req, res) => {
+export const getUser = async (req, res) => {
   try {
-    const user = await userModel.findById(req.params.id);
-     return res.status(200).send({
+    const userId = req.user._id;
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    
+    return res.status(200).send({
       success: true,
-      message: "User Fetched Successfully",
+      message: "User fetched successfully",
       user,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in getUser controller:", error.message);
     return res.status(500).send({
       success: false,
-      message: "Error WHile Geting User",
-      error,
+      message: "Error while fetching user",
+      error: error.message,
     });
   }
 };
+
+
 
 //test controller
 export const testController = (req, res) => {

@@ -3,28 +3,34 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null); 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:8000/api/v1/auth/dashboard", {
+        const token = localStorage.getItem("token"); 
+        if (!token) {
+          throw new Error("No token found"); 
+        }
+
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const userId = decodedToken._id;
+
+        const res = await axios.get(`http://localhost:8000/api/v1/auth/dashboard/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
-        console.log(res.data);
-        setData(res.data);
+
+        console.log("Fetched data:", res.data); 
+        setData(res.data.user); 
       } catch (err) {
-        console.error(err);
-        navigate("/login");
+        console.error("Error fetching dashboard data:", err);
+        navigate("/login"); 
       }
     };
+
     fetchData();
   }, [navigate]);
-
-
 
   const containerStyle = {
     padding: "20px",
@@ -64,35 +70,36 @@ const Dashboard = () => {
   };
 
   return (
-
     <div style={containerStyle}>
       <h2 style={headerStyle}>Dashboard</h2>
-      <ul style={listStyle}>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Name:</span>
-          <span style={valueStyle}>KK</span>
-        </li>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Email:</span>
-          <span style={valueStyle}>kk@gmail.com</span>
-        </li>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Phone No:</span>
-          <span style={valueStyle}>1234567890</span>
-        </li>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Address:</span>
-          <span style={valueStyle}>Kanpur</span>
-        </li>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Answer:</span>
-          <span style={valueStyle}>MSD</span>
-        </li>
-        <li style={listItemStyle}>
-          <span style={labelStyle}>Role:</span>
-          <span style={valueStyle}>Student</span>
-        </li>
-      </ul>
+      {data ? (
+        <ul style={listStyle}>
+          <li style={listItemStyle}>
+            <span style={labelStyle}>Name:</span>
+            <span style={valueStyle}>{data.name}</span>
+          </li>
+          <li style={listItemStyle}>
+            <span style={labelStyle}>Email:</span>
+            <span style={valueStyle}>{data.email}</span>
+          </li>
+          <li style={listItemStyle}>
+            <span style={labelStyle}>Phone No:</span>
+            <span style={valueStyle}>{data.phone}</span>
+          </li>
+          <li style={listItemStyle}>
+            <span style={labelStyle}>Address:</span>
+            <span style={valueStyle}>{data.address}</span>
+          </li>
+          <li style={listItemStyle}>
+            <span style={labelStyle}>Role:</span>
+            <span style={valueStyle}>
+              {data.role === 0 ? "Student" : "Admin"} 
+            </span>
+          </li>
+        </ul>
+      ) : (
+        <p style={{ textAlign: "center", color: "#666" }}>Loading...</p>
+      )}
     </div>
   );
 };

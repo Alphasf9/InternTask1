@@ -38,7 +38,7 @@ router.get("/admin-auth", requireSignIn, isAdmin, (req, res) => {
 //update profile
 router.put("/profile", requireSignIn, updateProfileController);
 
-router.get("/dashboard", requireSignIn, getUser);
+router.get("/dashboard/:id", requireSignIn, getUser);
 
 //orders
 // router.get("/orders", requireSignIn, getOrdersController);
